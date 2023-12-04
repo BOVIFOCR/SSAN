@@ -41,7 +41,8 @@ class Spoofing_valtest(Dataset):
         self.landmarks_frame = pd.read_csv(info_list, delimiter=",", header=None)
         self.face_scale = face_scale
         self.root_dir = root_dir
-        self.map_root_dir = root_dir.replace("Test_files", "Depth/Test_files")
+        # self.map_root_dir = root_dir.replace("Test_files", "Depth/Test_files")
+        self.map_root_dir = root_dir.replace("test", "depth/test")
         self.transform = transform
         self.img_size = img_size
         self.map_size = map_size
@@ -67,24 +68,31 @@ class Spoofing_valtest(Dataset):
     def get_single_image_x(self, image_dir, video_name, spoofing_label):
         files_total = len([name for name in glob(os.path.join(image_dir, "*.jpg")) if os.path.isfile(os.path.join(image_dir, name))])
         map_dir = os.path.join(self.map_root_dir, video_name)
+        video_name = video_name.split('/')[-1]
         interval = files_total//10
         image_x = np.zeros((frames_total, self.img_size, self.img_size, 3))
         map_x = np.ones((frames_total, self.map_size, self.map_size))
         for ii in range(frames_total):
-            image_id = ii*interval + 1 
+            image_id = 0  # ii*interval + 1
             for temp in range(500):
-                image_name = "{}_{}_scene.jpg".format(video_name, image_id)
+                # image_name = "{}_{}_scene.jpg".format(video_name, image_id)
+                image_name = "{}_{}.jpg".format(video_name, image_id)
                 image_path = os.path.join(image_dir, image_name)
-                map_name = "{}_{}_depth1D.jpg".format(video_name, image_id)
+                # map_name = "{}_{}_depth1D.jpg".format(video_name, image_id)
+                map_name = "{}_{}.jpg".format(video_name, image_id)
                 map_path = os.path.join(map_dir, map_name)
                 if os.path.exists(image_path) and os.path.exists(map_path):
                     image_x_temp = cv2.imread(image_path)
                     map_x_temp = cv2.imread(map_path, 0)
                 if os.path.exists(image_path) and (image_x_temp is not None) and (map_x_temp is not None):
                     break
-                image_id+=1
+                image_id += 1
             # RGB
-            image_x[ii,:,:,:] = cv2.resize(crop_face_from_scene(image_x_temp, self.face_scale), (self.img_size, self.img_size))
+            try:
+                image_x[ii,:,:,:] = cv2.resize(crop_face_from_scene(image_x_temp, self.face_scale), (self.img_size, self.img_size))
+            except:
+                print(image_dir, video_name, spoofing_label)
+                exit(1)
             temp = cv2.resize(crop_face_from_scene(map_x_temp, self.face_scale), (self.map_size, self.map_size))
             map_x[ii,:,:] = temp
         return image_x, map_x

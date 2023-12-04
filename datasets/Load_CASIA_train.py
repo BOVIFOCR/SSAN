@@ -68,16 +68,22 @@ class Spoofing_train(Dataset):
 
     def get_single_image_x(self, image_dir, video_name, spoofing_label):
         frames_total = len(glob(os.path.join(image_dir, "*.jpg")))
+        # print("FRAMES_TOTAL=", frames_total)
         map_dir = os.path.join(self.map_root_dir, video_name)
         # random choose 1 frame
         image_hair = video_name.split("/")[-1]
         for temp in range(500):
-            image_id = np.random.randint(0, frames_total-1)
+            try:
+                image_id = np.random.randint(0, frames_total-1)
+            except ValueError:
+                raise ValueError(f"high <= 0, frames_total={frames_total},\nimage_dir={image_dir},\nvideo_name={video_name}")
+
             image_name = "{}_{}.jpg".format(image_hair, image_id)
             image_path = os.path.join(image_dir, image_name)
             bbx_path = image_path.replace("jpg", "dat")
             if spoofing_label==1:
-                map_name = "{}_{}_depth.jpg".format(image_hair, image_id)
+                # map_name = "{}_{}_depth.jpg".format(image_hair, image_id)
+                map_name = "{}_{}.jpg".format(image_hair, image_id)
                 map_path = os.path.join(map_dir, map_name)
                 if os.path.exists(image_path) and os.path.exists(bbx_path) and os.path.exists(map_path):
                     image_x_temp = cv2.imread(image_path)
@@ -92,13 +98,13 @@ class Spoofing_train(Dataset):
         face_scale = np.random.randint(int(self.scale_down*10), int(self.scale_up*10))
         face_scale = face_scale/10.0
         if spoofing_label == 1:
-            map_x = cv2.resize(crop_face_from_scene(map_x_temp, bbx_path, face_scale), (self.map_size, self.map_size))
+            try:
+                map_x = cv2.resize(crop_face_from_scene(map_x_temp, bbx_path, face_scale), (self.map_size, self.map_size))
+            except UnboundLocalError:
+                raise UnboundLocalError(f"referenced before assignmented,\nimage_dir={image_dir},\nvideo_name={video_name}")
         else:
             map_x = np.zeros((self.map_size, self.map_size))
         # RGB
-        try:
-            image_x_temp = cv2.imread(image_path)
-            image_x = cv2.resize(crop_face_from_scene(image_x_temp, bbx_path, face_scale), (self.img_size, self.img_size))
-        except:
-            print(image_path)
+        image_x_temp = cv2.imread(image_path)
+        image_x = cv2.resize(crop_face_from_scene(image_x_temp, bbx_path, face_scale), (self.img_size, self.img_size))
         return image_x, map_x

@@ -19,36 +19,42 @@ class data_merge(object):
         self.dic = {}
         self.image_dir = image_dir
         CASIA_MFSD_info = dataset_info()
-        CASIA_MFSD_info.root_dir = os.path.join(self.image_dir, "img_CASIA_FASD")
+        CASIA_MFSD_info.root_dir = os.path.join(self.image_dir, "casia-fasd")
         self.dic["CASIA_MFSD"] = CASIA_MFSD_info
         # Replay_attack
         Replay_attack_info = dataset_info()
-        Replay_attack_info.root_dir = os.path.join(self.image_dir, "img_replayattack")
+        Replay_attack_info.root_dir = os.path.join(self.image_dir, "replay-attack")
         self.dic["Replay_attack"] = Replay_attack_info
         # MSU_MFSD
         MSU_MFSD_info = dataset_info()
-        MSU_MFSD_info.root_dir = os.path.join(self.image_dir, "img_MSU_MFSD")
+        MSU_MFSD_info.root_dir = os.path.join(self.image_dir, "msu-mfsd")
         self.dic["MSU_MFSD"] = MSU_MFSD_info
         # OULU
         OULU_info = dataset_info()
-        OULU_info.root_dir = os.path.join(self.image_dir, "oulu_images_crop")
+        OULU_info.root_dir = os.path.join(self.image_dir, "oulu-npu")
         self.dic["OULU"] = OULU_info
+
+    def set_test_name(self, name):
+        self.TEST_NAME = name
 
     def get_single_dataset(self, data_name="", train=True, img_size=256, map_size=32, transform=None, debug_subset_size=None, UUID=-1):
         if train:
             data_dir = self.dic[data_name].root_dir
             if data_name in ["OULU"]:
-                data_set = Spoofing_train_oulu(os.path.join(data_dir, "train_list_video.txt"), os.path.join(data_dir, "Train_files"), transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
+                # data_set = Spoofing_train_oulu(os.path.join(data_dir, "train_list_video.txt"), os.path.join(data_dir, "Train_files"), transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
+                data_set = Spoofing_train_oulu(os.path.join(data_dir, "train_list_video.txt"), data_dir, transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
             elif data_name in ["CASIA_MFSD", "Replay_attack", "MSU_MFSD"]:
                 data_set = Spoofing_train_casia(os.path.join(data_dir, "train_list_video.txt"), data_dir, transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
             if debug_subset_size is not None:
                 data_set = torch.utils.data.Subset(data_set, range(0, debug_subset_size))
         else:
             data_dir = self.dic[data_name].root_dir
+            TEST_FILENAME = f"{self.TEST_NAME}_list_video.txt"
             if data_name in ["OULU"]:
-                data_set = Spoofing_valtest_oulu(os.path.join(data_dir, "test_list_video.txt"), os.path.join(data_dir, "Test_files"), transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
+                # data_set = Spoofing_valtest_oulu(os.path.join(data_dir, TEST_FILENAME), os.path.join(data_dir, "Test_files"), transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
+                data_set = Spoofing_valtest_oulu(os.path.join(data_dir, TEST_FILENAME), data_dir, transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
             elif data_name in ["CASIA_MFSD", "Replay_attack", "MSU_MFSD"]:
-                data_set = Spoofing_valtest_casia(os.path.join(data_dir, "test_list_video.txt"), data_dir, transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
+                data_set = Spoofing_valtest_casia(os.path.join(data_dir, TEST_FILENAME), data_dir, transform=transform, img_size=img_size, map_size=map_size, UUID=UUID)
             if debug_subset_size is not None:
                 data_set = torch.utils.data.Subset(data_set, range(0, debug_subset_size))
         print("Loading {}, number: {}".format(data_name, len(data_set)))

@@ -1,7 +1,10 @@
 # my ignore
+*nohup*
+*.pth
 results/
 *.sh
 demo.py
+*.out
 
 # system ignore
 .DS_Store

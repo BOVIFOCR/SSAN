@@ -37,7 +37,8 @@ class Spoofing_train(Dataset):
     def __init__(self, info_list, root_dir, transform=None, scale_up=1.5, scale_down=1.0, img_size=256, map_size=32, UUID=-1):
         self.landmarks_frame = pd.read_csv(info_list, delimiter=",", header=None)
         self.root_dir = root_dir
-        self.map_root_dir = root_dir.replace("Train_files", "Depth/Train_files")
+        # self.map_root_dir = root_dir.replace("Train_files", "Depth/Train_files")
+        self.map_root_dir = root_dir.replace("train", "depth/train")
         self.transform = transform
         self.scale_up = scale_up
         self.scale_down = scale_down
@@ -67,10 +68,12 @@ class Spoofing_train(Dataset):
         map_dir = os.path.join(self.map_root_dir, video_name)
         for temp in range(500):
             image_id = np.random.randint(0, frames_total-1)
-            image_name = "{}_{}_scene.jpg".format(video_name, image_id)
+            # image_name = "{}_{}_scene.jpg".format(video_name, image_id)
+            image_name = "{}_{}.jpg".format(video_name, image_id)
             image_path = os.path.join(image_dir, image_name)
             if spoofing_label==1:
-                map_name = "{}_{}_depth1D.jpg".format(video_name, image_id)
+                # map_name = "{}_{}_depth1D.jpg".format(video_name, image_id)
+                map_name = "{}_{}.jpg".format(video_name, image_id)
                 map_path = os.path.join(map_dir, map_name)
                 if os.path.exists(image_path) and os.path.exists(map_path):
                     image_x_temp = cv2.imread(image_path)

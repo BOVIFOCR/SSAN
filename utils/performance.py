@@ -2,6 +2,21 @@ from sklearn.metrics import roc_curve, auc
 import numpy as np
 
 
+def bs(a, v):
+    n = len(a)
+    L, R = 0, n  # a[l] >= v, a[R] < v
+    while L < R-1:
+        m = L + (R-L)//2
+        if a[m] >= v:
+            L = m
+        else:
+            R = m
+    ans = L
+    if L < n-1 and v-a[L+1] < a[L]-v:
+        ans = L+1
+    return ans
+
+
 def get_err_threhold(fpr, tpr, threshold):
     differ_tpr_fpr_1=tpr+fpr-1.0
     right_index = np.argmin(np.abs(differ_tpr_fpr_1))
@@ -9,7 +24,8 @@ def get_err_threhold(fpr, tpr, threshold):
     err = fpr[right_index]    
     return err, best_th, right_index
 
-def performances_val(map_score_val_filename):
+
+def performances_val(map_score_val_filename, preset_thr=None):
     with open(map_score_val_filename, 'r') as file:
         lines = file.readlines()
     val_scores = []
@@ -37,9 +53,15 @@ def performances_val(map_score_val_filename):
     fpr,tpr,threshold = roc_curve(val_labels, val_scores, pos_label=1)
     auc_test = auc(fpr, tpr)
     val_err, val_threshold, right_index = get_err_threhold(fpr, tpr, threshold)
+
+    if preset_thr is None:
+        preset_thr = val_threshold
+    else:
+        right_index = bs(threshold, preset_thr)
     
-    type1 = len([s for s in data if s['map_score'] < val_threshold and s['label'] == 1])
-    type2 = len([s for s in data if s['map_score'] > val_threshold and s['label'] == 0])
+    type1 = len([s for s in data if s['map_score'] < preset_thr and s['label'] == 1])
+    type2 = len([s for s in data if s['map_score'] > preset_thr and s['label'] == 0])
+
     
     val_ACC = 1-(type1 + type2) / count
     
@@ -47,7 +69,7 @@ def performances_val(map_score_val_filename):
     
     HTER = (fpr+FRR)/2.0    # error recognition rate &  reject recognition rate
     
-    return val_ACC, fpr[right_index], FRR[right_index], HTER[right_index], auc_test, val_err
+    return val_ACC, fpr[right_index], FRR[right_index], HTER[right_index], auc_test, val_err, val_threshold
 
 
 def performances_tpr_fpr(map_score_val_filename):
