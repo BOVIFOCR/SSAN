@@ -122,7 +122,7 @@ def main(args):
         # dev + test
         USE_THR_FROM_DEV = False
         prev_val_thr = None
-        for TEST_NAME in ["dev", "test"]:
+        for TEST_NAME in ["test"]:  # ["dev", "test"]:
             data_bank.set_test_name(TEST_NAME)
             epoch_test = 1
             if epoch % epoch_test == epoch_test-1:
