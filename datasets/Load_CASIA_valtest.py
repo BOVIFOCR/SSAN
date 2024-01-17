@@ -84,7 +84,7 @@ class Spoofing_valtest(Dataset):
                 # map_name = "{}_{}_depth.jpg".format(image_hair, image_id)
                 map_name = "{}_{}.jpg".format(image_hair, image_id)
                 map_path = os.path.join(map_dir, map_name)
-                bbx_path = image_path.replace("jpg", "dat")
+                bbx_path = image_path.replace(".jpg", ".dat")
                 if os.path.exists(image_path) and os.path.exists(bbx_path) and os.path.exists(map_path):
                     image_x_temp = cv2.imread(image_path)
                     map_x_temp = cv2.imread(map_path, 0)
