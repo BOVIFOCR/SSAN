@@ -80,7 +80,7 @@ class Spoofing_train(Dataset):
 
             image_name = "{}_{}.jpg".format(image_hair, image_id)
             image_path = os.path.join(image_dir, image_name)
-            bbx_path = image_path.replace("jpg", "dat")
+            bbx_path = image_path.replace(".jpg", ".dat")
             if spoofing_label==1:
                 # map_name = "{}_{}_depth.jpg".format(image_hair, image_id)
                 map_name = "{}_{}.jpg".format(image_hair, image_id)
