@@ -43,15 +43,12 @@ class Spoofing_train(Dataset):
 
     def get_single_image_x(self, img_path, img_name, spoofing_label):
         map_path = img_path.replace('.', '_depth.')
-        bbx_path = img_path.rpartition('.')[0] + '.dat'
         img_ok = os.path.exists(img_path)
         map_ok = spoofing_label == 0 or os.path.exists(map_path)
-        bbx_ok = os.path.exists(bbx_path)
-        if not all([img_ok, map_ok, bbx_ok]):
+        if not all([img_ok, map_ok]):
             raise FileNotFoundError(f"File not found for {img_name}",
                                     f"{img_ok=}, {img_path=}",
-                                    f"{map_ok=}, {map_path=}",
-                                    f"{bbx_ok=}, {bbx_path=}")
+                                    f"{map_ok=}, {map_path=}")
         img_x_tmp = cv2.imread(img_path)
         if img_x_tmp is None:
             raise ValueError("img_x_tmp is None", img_path)
@@ -63,7 +60,5 @@ class Spoofing_train(Dataset):
             map_x = cv2.resize(map_x_tmp, (self.map_size, self.map_size))
         else:
             map_x = np.zeros((self.map_size, self.map_size))
-        # face_scale = np.random.randint(int(self.scale_down*10),
-        #                                int(self.scale_up*10))
-        # face_scale = face_scale/10.0
+
         return img_x, map_x
